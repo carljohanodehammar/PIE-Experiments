@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Reading Complex Texts: An Interactive Guide</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Source+Sans+3:wght@300;400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;1,8..60,400&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --ju-purple: #961B81;
+    --ju-purple-dark: #80166F;
+    --ju-purple-light: #F5E8F3;
+    --ju-turquoise: #55AAA7;
+    --ju-turquoise-light: #E8F5F4;
+    --ju-yellow: #FFB500;
+    --ju-yellow-light: #FFF8E1;
+    --white: #ffffff;
+    --grey-100: #F7F7F8;
+    --grey-200: #EBEBED;
+    --grey-400: #9B9BA8;
+    --grey-700: #3D3D4D;
+    --grey-900: #1A1A2E;
+    --font-display: 'Playfair Display', Georgia, serif;
+    --font-body: 'Source Sans 3', sans-serif;
+    --font-serif: 'Source Serif 4', Georgia, serif;
+  }
+  body { font-family: var(--font-body); background: var(--white); color: var(--grey-900); line-height: 1.6; min-height: 100vh; }
+  .site-header { background: var(--white); border-bottom: 3px solid var(--ju-purple); position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 12px rgba(150,27,129,0.08); }
+  .header-inner { max-width: 1200px; margin: 0 auto; padding: 0 2rem; display: flex; align-items: stretch; }
+  .header-accent { width: 6px; background: linear-gradient(180deg, var(--ju-purple) 0%, var(--ju-turquoise) 100%); flex-shrink: 0; margin-right: 1.5rem; }
+  .header-text { padding: 0.9rem 0; flex: 1; }
+  .header-text .kicker { font-size: 0.68rem; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; color: var(--ju-purple); display: block; margin-bottom: 0.2rem; }
+  .header-text h1 { font-family: var(--font-display); font-size: 1.3rem; font-weight: 700; color: var(--grey-900); line-height: 1.2; }
+  .header-text .subtitle { font-size: 0.77rem; color: var(--grey-400); margin-top: 0.15rem; }
+  .header-ilo { background: var(--ju-purple-light); border-left: 3px solid var(--ju-purple); padding: 0.75rem 1.25rem; display: flex; align-items: center; max-width: 360px; margin-left: 1.5rem; }
+  .header-ilo p { font-size: 0.71rem; line-height: 1.5; color: var(--ju-purple-dark); font-family: var(--font-serif); font-style: italic; }
+  .header-ilo strong { font-style: normal; font-size: 0.63rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ju-purple); display: block; margin-bottom: 0.2rem; font-family: var(--font-body); }
+  .main-wrap { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+  .intro-band { background: var(--grey-100); border-radius: 12px; padding: 1.4rem 1.75rem; margin-bottom: 2rem; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem; border: 1px solid var(--grey-200); }
+  .intro-card { display: flex; gap: 0.7rem; align-items: flex-start; }
+  .intro-icon { width: 34px; height: 34px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
+  .intro-card h3 { font-size: 0.77rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 0.25rem; }
+  .intro-card p { font-size: 0.8rem; color: var(--grey-700); line-height: 1.5; }
+  .section-label { font-size: 0.67rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--grey-400); margin-bottom: 0.55rem; }
+  .topic-tabs { display: flex; gap: 0.45rem; flex-wrap: wrap; margin-bottom: 1.75rem; }
+  .topic-tab { background: none; border: 2px solid var(--grey-200); border-radius: 50px; padding: 0.4rem 1rem; font-size: 0.81rem; font-family: var(--font-body); font-weight: 500; color: var(--grey-700); cursor: pointer; transition: all 0.18s ease; }
+  .topic-tab:hover { border-color: var(--ju-turquoise); color: var(--ju-turquoise); }
+  .topic-tab.active { background: var(--ju-purple); border-color: var(--ju-purple); color: white; }
+  .spectrum-bar { background: linear-gradient(90deg, var(--ju-turquoise-light) 0%, var(--ju-purple-light) 100%); border-radius: 8px; padding: 0.7rem 1.4rem; display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.4rem; border: 1px solid var(--grey-200); }
+  .spectrum-label { font-size: 0.73rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; }
+  .spectrum-label.left { color: var(--ju-turquoise); }
+  .spectrum-label.right { color: var(--ju-purple-dark); }
+  .spectrum-track { flex: 1; margin: 0 1.5rem; height: 4px; background: linear-gradient(90deg, var(--ju-turquoise) 0%, var(--ju-purple) 100%); border-radius: 2px; position: relative; }
+  .spectrum-dots { display: flex; justify-content: space-between; position: absolute; top: 50%; left: 0; right: 0; transform: translateY(-50%); }
+  .spectrum-dot { width: 12px; height: 12px; border-radius: 50%; background: white; border: 2.5px solid; cursor: pointer; transition: transform 0.15s; }
+  .spectrum-dot:hover { transform: scale(1.4); }
+  .spectrum-dot.active { transform: scale(1.5); }
+  .panels-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem; }
+  .text-panel { background: var(--white); border-radius: 12px; border: 1.5px solid var(--grey-200); overflow: hidden; transition: box-shadow 0.2s; }
+  .text-panel:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.07); }
+  .text-panel.selected-left { border-color: var(--ju-turquoise); box-shadow: 0 0 0 3px rgba(85,170,167,0.18); }
+  .text-panel.selected-right { border-color: var(--ju-purple); box-shadow: 0 0 0 3px rgba(150,27,129,0.13); }
+  .panel-header { padding: 0.9rem 1.2rem 0.7rem; border-bottom: 1px solid var(--grey-200); display: flex; align-items: flex-start; gap: 0.7rem; }
+  .panel-badge { border-radius: 6px; padding: 0.28rem 0.6rem; font-size: 0.67rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap; flex-shrink: 0; }
+  .badge-informal { background: var(--ju-turquoise-light); color: #246360; }
+  .badge-formal { background: var(--grey-100); color: var(--grey-700); border: 1px solid var(--grey-200); }
+  .badge-academic { background: var(--ju-purple); color: white; }
+  .panel-title-block { flex: 1; }
+  .panel-title { font-size: 0.86rem; font-weight: 600; color: var(--grey-900); line-height: 1.3; }
+  .panel-meta { font-size: 0.7rem; color: var(--grey-400); margin-top: 0.12rem; }
+  .cefr-pip { background: var(--ju-yellow-light); border: 1.5px solid var(--ju-yellow); border-radius: 6px; padding: 0.18rem 0.48rem; font-size: 0.68rem; font-weight: 600; color: #7a5700; white-space: nowrap; }
+  .panel-body { padding: 1.2rem; }
+  .excerpt { border-radius: 8px; padding: 1rem 1.1rem; margin-bottom: 0.9rem; line-height: 1.75; font-size: 0.87rem; }
+  .excerpt.informal-style { background: var(--ju-turquoise-light); border-left: 3px solid var(--ju-turquoise); font-family: var(--font-body); }
+  .excerpt.formal-style { background: var(--grey-100); border-left: 3px solid var(--grey-400); font-family: var(--font-serif); }
+  .excerpt.academic-style { background: var(--ju-purple-light); border-left: 3px solid var(--ju-purple); font-family: var(--font-serif); }
+  .excerpt .ref { color: var(--ju-purple); font-size: 0.78em; }
+  .excerpt .term { border-bottom: 2px dashed var(--ju-yellow); cursor: help; position: relative; }
+  .term-tooltip { display: none; }
+  .excerpt .term:hover + .term-tooltip,
+  .excerpt .term:focus + .term-tooltip { display: block; }
+  .annotation-toggle { background: none; border: 1.5px solid var(--ju-purple); color: var(--ju-purple); border-radius: 6px; padding: 0.38rem 0.8rem; font-size: 0.77rem; font-family: var(--font-body); font-weight: 500; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; gap: 0.4rem; width: 100%; justify-content: center; margin-bottom: 0.7rem; }
+  .annotation-toggle:hover, .annotation-toggle.open { background: var(--ju-purple); color: white; }
+  .annotation-box { background: var(--ju-yellow-light); border: 1px solid var(--ju-yellow); border-radius: 8px; padding: 0.85rem 0.95rem; margin-bottom: 0.7rem; }
+  .annotation-box h4 { font-size: 0.69rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #7a5700; margin-bottom: 0.5rem; }
+  .annotation-list { list-style: none; display: flex; flex-direction: column; gap: 0.38rem; }
+  .annotation-list li { display: flex; gap: 0.5rem; align-items: flex-start; font-size: 0.8rem; color: var(--grey-700); line-height: 1.5; }
+  .annotation-list li .bullet { color: var(--ju-yellow); font-weight: 700; flex-shrink: 0; margin-top: 0.1rem; }
+  .strategy-chips { display: flex; flex-wrap: wrap; gap: 0.38rem; margin-top: 0.6rem; }
+  .strategy-chip { background: var(--ju-turquoise-light); border: 1px solid var(--ju-turquoise); color: #246360; border-radius: 50px; padding: 0.18rem 0.6rem; font-size: 0.7rem; font-weight: 500; }
+  .feature-row { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.3rem; }
+  .feature-item { font-size: 0.7rem; color: var(--grey-400); }
+  .feature-item strong { color: var(--grey-700); }
+  .compare-section { background: var(--grey-100); border-radius: 12px; padding: 1.4rem 1.5rem; margin-bottom: 2rem; border: 1px solid var(--grey-200); }
+  .compare-section h2 { font-family: var(--font-display); font-size: 1.05rem; color: var(--grey-900); margin-bottom: 1rem; cursor: pointer; user-select: none; display: flex; align-items: center; gap: 0.5rem; }
+  .feature-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+  .feature-table th { text-align: left; padding: 0.48rem 0.7rem; font-size: 0.68rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; border-bottom: 2px solid var(--grey-200); color: var(--grey-400); }
+  .feature-table td { padding: 0.52rem 0.7rem; border-bottom: 1px solid var(--grey-200); vertical-align: top; line-height: 1.5; }
+  .feature-table tr:last-child td { border-bottom: none; }
+  .feature-table td:first-child { font-weight: 600; color: var(--grey-700); font-size: 0.76rem; width: 20%; }
+  .informal-cell { color: #246360; }
+  .formal-cell { color: var(--grey-700); }
+  .academic-cell { color: var(--ju-purple-dark); }
+  .glossary-section { margin-bottom: 2rem; }
+  .glossary-section h2 { font-family: var(--font-display); font-size: 1.05rem; color: var(--grey-900); margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid var(--ju-purple); cursor: pointer; user-select: none; display: flex; align-items: center; gap: 0.5rem; }
+  .glossary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.7rem; }
+  .glossary-card { background: var(--white); border-radius: 10px; border: 1.5px solid var(--grey-200); padding: 0.9rem; transition: border-color 0.15s, box-shadow 0.15s; }
+  .glossary-card:hover { border-color: var(--ju-turquoise); box-shadow: 0 2px 10px rgba(85,170,167,0.13); }
+  .glossary-card h4 { font-size: 0.8rem; font-weight: 600; color: var(--ju-purple-dark); margin-bottom: 0.38rem; }
+  .glossary-card p { font-size: 0.76rem; color: var(--grey-700); line-height: 1.5; }
+  .site-footer { border-top: 1px solid var(--grey-200); padding: 1.1rem 2rem; margin-top: 1rem; max-width: 1200px; margin-left: auto; margin-right: auto; display: flex; align-items: center; justify-content: space-between; }
+  .footer-note { font-size: 0.71rem; color: var(--grey-400); }
+  .cefr-scale { display: flex; gap: 2px; }
+  .cefr-step { width: 26px; height: 17px; border-radius: 3px; display: flex; align-items: center; justify-content: center; font-size: 0.58rem; font-weight: 700; color: white; }
+  .fade-in { animation: fadeIn 0.28s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+  @media (max-width: 900px) { .panels-grid { grid-template-columns: 1fr; } .intro-band { grid-template-columns: 1fr; } .header-ilo { display: none; } .glossary-grid { grid-template-columns: 1fr 1fr; } }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState } = React;
+
+const TOPICS = [
+  { id: "climate", label: "Climate change" },
+  { id: "social_media", label: "Social media" },
+  { id: "sleep", label: "Sleep science" },
+  { id: "ai", label: "Artificial intelligence" },
+];
+
+const TEXTS = {
+  climate: [
+    {
+      id: "c1", badge: "Informal", badgeClass: "badge-informal", panelStyle: "informal-style",
+      title: "WhatsApp group message", meta: "Personal communication between friends", cefr: "A2–B1",
+      content: "omg did u see the weather this summer?? its SO hot my mum says it wasnt like this when she was young. everyone keeps saying its climate change but idk, feels like summer is just summer?? tbh i dont really get why everyone is freaking out. anyway what r u doing this weekend",
+      features: { Vocabulary: "Everyday, colloquial (omg, tbh, idk)", Grammar: "Fragmented, abbreviations, no punctuation", Register: "Very informal, personal, conversational", Purpose: "Social chat, not to inform" },
+      annotations: {
+        title: "Reading strategies for informal messages",
+        points: [
+          "Read quickly to get the gist: what is the writer doing or feeling?",
+          "Do not expect precise facts or evidence — opinions are personal and unverified.",
+          "Notice the writer's attitude: sceptical, casual, unbothered about climate change.",
+          "Abbreviations (tbh = to be honest, idk = I don't know) signal informality, not ignorance.",
+          "The final question shifts topic entirely, which is normal in casual messaging.",
+        ],
+        strategies: ["Skim reading", "Identifying register", "Recognising attitudes"],
+      },
+    },
+    {
+      id: "c2", badge: "Semi-formal", badgeClass: "badge-informal", panelStyle: "informal-style",
+      title: "Reddit comment (r/environment)", meta: "Online public forum, user-generated content", cefr: "B1–B2",
+      content: "Yeah the heat records this year are genuinely alarming. Scientists have been saying for decades that we'd see more extreme heat events, and here we are. The frustrating part is that some people still act like it's just weather variation — it's not. CO2 levels are at their highest in 800,000 years. That's not a talking point, that's just data. If you want to actually understand it I'd recommend checking out NASA's climate portal rather than random YouTube videos.",
+      features: { Vocabulary: "Semi-technical (CO2 levels, heat records), mostly accessible", Grammar: "Complete sentences, informal connectors (Yeah, That's...)", Register: "Informal but informed, persuasive", Purpose: "Argue a position, recommend a source" },
+      annotations: {
+        title: "Reading strategies for online opinion writing",
+        points: [
+          "Identify the writer's position early: they are concerned about climate change and challenging sceptics.",
+          "Evaluate the claim: '800,000 years' is specific — is it supported? No source is cited here.",
+          "Notice the rhetorical move: 'That's not a talking point, that's just data' challenges opponents without providing a link.",
+          "Source recommendation at the end is useful: NASA is authoritative. Compare this to the WhatsApp message, which offered no source at all.",
+          "This text is longer and denser than the message but still lacks formal academic citation.",
+        ],
+        strategies: ["Identifying argument structure", "Evaluating claims", "Source awareness", "Inferring register"],
+      },
+    },
+    {
+      id: "c3", badge: "Formal", badgeClass: "badge-formal", panelStyle: "formal-style",
+      title: "Newspaper article (The Guardian)", meta: "Broadsheet journalism, edited and fact-checked", cefr: "B2",
+      content: "Global average temperatures in 2023 exceeded pre-industrial levels by more than 1.4°C for the first time, according to the European Union's Copernicus Climate Change Service. Scientists warn that the 1.5°C threshold established under the 2015 Paris Agreement — the point at which climate disruption is projected to intensify sharply — could be breached within the next decade. Dr Sarah Perkins-Kirkpatrick, a climate scientist at the University of New South Wales, described the data as unambiguous and deeply concerning, adding that heat extremes previously considered rare one-in-fifty-year events are now occurring every five to ten years across multiple continents.",
+      features: { Vocabulary: "Formal, domain-specific (pre-industrial, Paris Agreement, threshold)", Grammar: "Complex sentences, embedded clauses, passive voice", Register: "Objective, distanced, authoritative", Purpose: "Inform an educated general audience" },
+      annotations: {
+        title: "Reading strategies for quality journalism",
+        points: [
+          "Locate attribution: 'according to the Copernicus Climate Change Service' — identifying the source of data is critical in formal texts.",
+          "Unpack embedded clauses: 'the 1.5°C threshold — the point at which...' is a definition within the sentence. Pause and read it as a separate unit.",
+          "Use context to decode technical phrases: 'pre-industrial levels' can be inferred from the sentence even without prior knowledge.",
+          "Track the quote: what exactly does the scientist say, and what does the journalist paraphrase? These are different kinds of evidence.",
+          "Notice hedging language: 'could be breached', 'is projected to' — journalists use these to signal uncertainty while keeping the claim strong.",
+        ],
+        strategies: ["Identifying attribution", "Unpacking complex syntax", "Evaluating hedged claims", "Distinguishing quote from paraphrase"],
+      },
+    },
+    {
+      id: "c4", badge: "Academic C1", badgeClass: "badge-academic", panelStyle: "academic-style",
+      title: "Peer-reviewed journal article (excerpt)", meta: "Nature Climate Change, Vol. 14 — Peer-reviewed", cefr: "C1+",
+      contentRich: true,
+      terms: [
+        { word: "attribution framework", def: "A statistical method measuring the influence of human activity on climate compared to natural variability" },
+        { word: "extreme weather events", def: "Events at the extreme end of a statistical distribution, rarer and more severe than typical weather" },
+        { word: "anthropogenic contribution to event probability", def: "The extent to which human forcing changed the likelihood of an event occurring" },
+        { word: "risk multiplier", def: "How many times more likely an event is relative to a pre-industrial baseline" },
+        { word: "corroborated", def: "Confirmed or strengthened by later research using different methods or data" },
+        { word: "meta-analyses", def: "Statistical analyses combining results from multiple independent studies to reach broader conclusions" },
+        { word: "adaptation policy", def: "Strategies for adjusting systems and societies to current and expected climate impacts" },
+        { word: "adaptive capacity", def: "The ability of a system or community to recover from and adjust to adverse conditions" },
+      ],
+      contentTemplate: "The {0} developed by Stott et al. (2016) has increasingly been applied to high-impact {1}, enabling quantification of the {2}. Fischer and Knutti (2015) [doi:10.1038/nclimate2617] demonstrate that at 2°C of global mean warming, the {3} for extreme heat events is approximately 5.4 (95% CI: 4.1–7.0), a finding {4} by subsequent {5} (Perkins-Kirkpatrick et al., 2022). These findings carry significant implications for {6}, particularly with respect to exposure-based risk modelling in low-income regions where {7} remains constrained.",
+      features: { Vocabulary: "Highly technical (attribution framework, anthropogenic, meta-analyses)", Grammar: "Long nominal phrases, passive, parenthetical citation", Register: "Impersonal, precise, hedged with statistics", Purpose: "Advance knowledge, report findings to specialists" },
+      annotations: {
+        title: "Reading strategies for academic journal texts",
+        points: [
+          "Do not read word by word from the start. Scan the first and last sentences of each paragraph first (PQRR: Preview, Question, Read, Review).",
+          "Hover over underlined terms to see quick definitions. In real reading, build a vocabulary log for technical terms.",
+          "Citations like (Fischer and Knutti, 2015) signal that a claim has evidence behind it. Check them if the claim is central to your argument.",
+          "When numbers appear (5.4, 95% CI), do not skip them. The CI shows the precision of the estimate; 95% CI is a standard threshold in scientific research.",
+          "Identify the logical structure: claim, evidence, implication. This text follows: (1) this method exists, (2) here are the quantified findings, (3) this matters for policy.",
+          "It is normal to re-read this text two or three times. The first reading gives orientation; the second builds comprehension.",
+        ],
+        strategies: ["PQRR active reading", "Vocabulary logging", "Understanding citation function", "Following argument structure", "Tolerating ambiguity"],
+      },
+    },
+  ],
+
+  social_media: [
+    {
+      id: "s1", badge: "Informal", badgeClass: "badge-informal", panelStyle: "informal-style",
+      title: "Instagram caption", meta: "Social media post, personal account", cefr: "A2–B1",
+      content: "cant believe i wasted 3 hours scrolling last night literally couldnt sleep after. social media is so addictive its not even funny. anyone else feel like this?? honestly need to do a digital detox but i know i wont lmao #relatable #digitaldetox #mood",
+      features: { Vocabulary: "Colloquial, hashtags as metadata (lmao = laughing my ass off)", Grammar: "No punctuation, sentence fragments", Register: "Very informal, performative, seeking engagement", Purpose: "Seek validation and community connection" },
+      annotations: {
+        title: "Reading strategies for social media captions",
+        points: [
+          "Read for emotional tone first: the writer is frustrated and seeking solidarity.",
+          "Hashtags are not part of the main text — they function as searchable labels and address a wider audience beyond the writer's followers.",
+          "Recognise the performative element: the text is crafted to get a reaction, not to convey information.",
+          "Note the contradiction: 'need to do a digital detox but i know i wont' — this self-awareness is rhetorical, not analytical.",
+          "This text type will not serve academic work but recognising its conventions builds your register awareness.",
+        ],
+        strategies: ["Identifying emotional tone", "Register awareness", "Understanding audience", "Distinguishing purpose"],
+      },
+    },
+    {
+      id: "s2", badge: "Semi-formal", badgeClass: "badge-informal", panelStyle: "informal-style",
+      title: "Blog post (personal opinion)", meta: "Medium.com article, independent author", cefr: "B1–B2",
+      content: "I deleted Instagram for a month last year. Here's what I noticed. The first week was genuinely uncomfortable — I kept reaching for my phone out of habit, sometimes five or six times an hour. By week three, that compulsion had faded. I was sleeping better, finishing books I'd started, and having longer conversations. I'm not saying social media is evil. But I do think we underestimate how much it fragments our attention, and how rarely we question whether those fragments are worth it.",
+      features: { Vocabulary: "Accessible but thoughtful (compulsion, fragments, underestimate)", Grammar: "Short declarative sentences, first-person, rhetorical contrast", Register: "Informal but reflective, personal essay style", Purpose: "Share experience and nudge the reader toward reflection" },
+      annotations: {
+        title: "Reading strategies for personal essays",
+        points: [
+          "Notice how the writer moves from personal experience (anecdote) to a broader claim (we underestimate...) — this is inductive reasoning.",
+          "Words like 'compulsion' (a strong urge difficult to resist) sit between everyday and academic vocabulary — they expand your range naturally.",
+          "Short sentences at the start ('Here's what I noticed') are a deliberate stylistic hook. Academic texts rarely do this.",
+          "The hedge 'I'm not saying social media is evil' is a concession move: the writer acknowledges the opposing view before asserting their own.",
+          "Compare the evidence here (personal observation) with the academic text: which is more persuasive in which context and for which audience?",
+        ],
+        strategies: ["Identifying reasoning patterns", "Vocabulary building from context", "Recognising rhetorical moves", "Evaluating evidence type"],
+      },
+    },
+    {
+      id: "s3", badge: "Formal", badgeClass: "badge-formal", panelStyle: "formal-style",
+      title: "Policy report (executive summary)", meta: "Ofcom UK Online Nation Report 2023 — adapted", cefr: "B2–C1",
+      content: "Adults in the UK spend an average of 3 hours 37 minutes online daily, with social media platforms accounting for 23% of total online time among users aged 18–34. While platform engagement has remained broadly stable since 2021, Ofcom's research indicates growing public concern over compulsive use and its relationship to wellbeing outcomes. Sixty-one percent of respondents who identified as heavy users reported difficulty reducing their usage, despite expressing a desire to do so. The report recommends that platforms be required to implement accessible tools enabling users to set time limits and review usage patterns, and calls on policymakers to treat excessive social media use as a public health consideration.",
+      features: { Vocabulary: "Formal, institutional (compulsive use, wellbeing outcomes, policymakers)", Grammar: "Precise statistics, passive constructions, long noun phrases", Register: "Neutral, authoritative, policy-oriented", Purpose: "Summarise findings and make recommendations" },
+      annotations: {
+        title: "Reading strategies for policy and report documents",
+        points: [
+          "Executive summaries are designed to be read before the full report: extract the main findings and recommendations first.",
+          "Statistics are the backbone: 3h 37min, 23%, 61% are all key claims. Ask: who measured this and how?",
+          "Note the shift from descriptive (what the data shows) to prescriptive (what should be done): 'the report recommends...' is a pivot point.",
+          "Phrases like 'broadly stable' and 'growing concern' are carefully measured language — this is not casual speech.",
+          "Passive voice ('be required to implement') is common in policy writing to describe obligations without assigning personal blame.",
+        ],
+        strategies: ["Extracting key findings", "Evaluating statistical claims", "Identifying recommendations", "Understanding passive voice function"],
+      },
+    },
+    {
+      id: "s4", badge: "Academic C1", badgeClass: "badge-academic", panelStyle: "academic-style",
+      title: "Peer-reviewed article (excerpt)", meta: "Journal of Computer-Mediated Communication, 2022 — Peer-reviewed", cefr: "C1+",
+      contentRich: true,
+      terms: [
+        { word: "Uses and gratifications theory", def: "A framework explaining media use as driven by internal needs: entertainment, information-seeking, or social connection" },
+        { word: "variable-ratio reinforcement mechanisms", def: "Unpredictable reward schedules (like likes and notifications) that are highly effective at sustaining behaviour" },
+        { word: "affordances", def: "Features of a digital environment that shape user behaviour, sometimes without conscious awareness" },
+        { word: "frictionless design", def: "Design decisions that make actions easy to perform without deliberate thought, exploiting cognitive defaults" },
+        { word: "undermine epistemic autonomy", def: "Reduce a person's capacity to make free, rational, informed choices" },
+        { word: "digital agency", def: "The extent to which a person has genuine control over their digital behaviour and choices" },
+        { word: "sociotechnical framework", def: "A perspective considering how social structures, technology, and human behaviour mutually shape each other" },
+        { word: "non-deliberate user behaviour", def: "Actions performed without explicit awareness or intentional decision-making" },
+      ],
+      contentTemplate: "{0} (Katz et al., 1974) has been extended in recent scholarship to examine {1} embedded in platform architecture (Montag et al., 2021 [doi:10.1016/j.chb.2020.106544]). These {2} — notifications, infinite scroll, and algorithmically curated feeds — have been theorised as intentional {3} elements that {4} by minimising behavioural friction. The construct of {5} therefore requires reconceptualisation beyond voluntaristic models of media use toward a {6} that accounts for the constitutive role of platform design in shaping {7}.",
+      features: { Vocabulary: "Highly specialised (affordances, variable-ratio reinforcement, epistemic autonomy)", Grammar: "Nominal groups, embedded clauses, citation-dense prose", Register: "Impersonal, theoretical, jargon-rich", Purpose: "Extend theory and reframe a key construct for specialists" },
+      annotations: {
+        title: "Reading strategies for theoretical academic texts",
+        points: [
+          "Identify the theoretical frame first: the text opens with 'Uses and gratifications theory'. If you don't know it, look it up before reading further.",
+          "Hover over terms. In practice, keep a glossary. Terms like 'affordances' and 'frictionless design' appear across multiple disciplines.",
+          "Track the logical chain: theory (Katz 1974) applied to design features (Montag 2021) to effect on agency, requiring a new framework.",
+          "The phrase 'requires reconceptualisation' is a standard academic move meaning: 'the existing concept is inadequate'. Recognise this pattern.",
+          "Do not worry if the first reading produces only 60% comprehension. Identify what you understand (platform design affects choice) and build from there.",
+          "Read the citation years as a timeline: 1974 to 2021 shows how the field developed. This is also a model for how you can structure literature reviews.",
+        ],
+        strategies: ["Identifying theoretical frames", "Vocabulary logging", "Following logical chains", "Tolerating ambiguity", "Reading citations as evidence"],
+      },
+    },
+  ],
+
+  sleep: [
+    {
+      id: "sl1", badge: "Informal", badgeClass: "badge-informal", panelStyle: "informal-style",
+      title: "Podcast transcript excerpt", meta: "Episode: 'Why You're Always Tired' — Casual health podcast", cefr: "B1",
+      content: "Basically what happens is, your brain has this like... cleaning system? And it only really works when you're asleep. So if you're staying up late scrolling your phone — which I know we all do — your brain literally can't do that maintenance stuff. And then you wake up feeling foggy. It's kind of like if you never cleaned your kitchen, you know? Eventually it just gets gross. That's kind of what's happening in your brain.",
+      features: { Vocabulary: "Colloquial, simplified metaphor (cleaning system, foggy, gross)", Grammar: "False starts, fillers (basically, like, kind of), spoken syntax", Register: "Casual, friendly, using analogy to simplify", Purpose: "Entertain and loosely inform a general audience" },
+      annotations: {
+        title: "Reading strategies for transcribed speech",
+        points: [
+          "Spoken language transcribed to text looks messier than written text — this is normal. The structure is conversational, not incorrect.",
+          "Identify the core claim beneath the casual delivery: 'the brain has a waste-clearance function that operates during sleep.'",
+          "The kitchen analogy is a scaffold, not evidence. It makes the idea accessible but cannot substitute for scientific data.",
+          "Words like 'basically' and 'kind of' signal approximation — the speaker is deliberately simplifying.",
+          "This text is useful for getting a general idea; you must then find an authoritative source to verify and extend the claim.",
+        ],
+        strategies: ["Identifying core claims", "Evaluating analogies", "Distinguishing explanation from evidence", "Source-seeking behaviour"],
+      },
+    },
+    {
+      id: "sl2", badge: "Semi-formal", badgeClass: "badge-informal", panelStyle: "informal-style",
+      title: "NHS patient information page", meta: "NHS.uk — public health information, medically reviewed", cefr: "B2",
+      content: "Most adults need between 7 and 9 hours of sleep per night. Consistently sleeping fewer than 6 hours is associated with an increased risk of conditions including type 2 diabetes, cardiovascular disease, and depression. Sleep deprivation affects concentration, reaction time, and emotional regulation. If you have difficulty falling or staying asleep for three or more nights per week over a period of three months, this is considered chronic insomnia and you should speak to your GP. Keeping a sleep diary for two weeks before your appointment can help your doctor identify patterns and recommend appropriate support.",
+      features: { Vocabulary: "Clinical but accessible (cardiovascular disease, insomnia, chronic)", Grammar: "Concise sentences, imperative for advice (you should)", Register: "Formal but accessible, public-health tone", Purpose: "Inform and instruct a lay patient audience" },
+      annotations: {
+        title: "Reading strategies for public health information",
+        points: [
+          "Read the numbers carefully: 7–9 hours, fewer than 6, three or more nights, three months. These are diagnostic criteria, not approximations.",
+          "The phrase 'associated with an increased risk' is hedged: it signals correlation, not causation. Sleep deprivation may not directly cause these conditions.",
+          "Notice the shift from informational to instructional: the second half tells you what to do. Identifying this pivot point helps you navigate the text.",
+          "Clinical terms (insomnia, cardiovascular disease) are used precisely here. Compare them with 'feeling tired' in the podcast — they are not informal synonyms.",
+          "This text is reliable: the NHS employs medical editors. Evaluate sources by their production process, not only their content.",
+        ],
+        strategies: ["Reading numerical data precisely", "Distinguishing correlation from causation", "Evaluating source reliability", "Identifying instructional moves"],
+      },
+    },
+    {
+      id: "sl3", badge: "Formal", badgeClass: "badge-formal", panelStyle: "formal-style",
+      title: "University lecture notes", meta: "Undergraduate Neuroscience module — formatted handout", cefr: "B2–C1",
+      content: "GLYMPHATIC SYSTEM AND SLEEP FUNCTION\n\nThe glymphatic system is a brain-wide waste-clearance network identified by Iliff et al. (2012). It operates primarily during non-REM slow-wave sleep, when interstitial space expands by approximately 60%, facilitating cerebrospinal fluid (CSF) flow and the clearance of metabolic waste products including amyloid-beta — a protein implicated in the pathogenesis of Alzheimer's disease.\n\nKey point for exam: Chronic sleep deprivation → reduced glymphatic clearance → accumulation of neurotoxic metabolites.",
+      features: { Vocabulary: "Technical (glymphatic, CSF, amyloid-beta, interstitial, pathogenesis)", Grammar: "Dense noun phrases, passive constructions, compressed logic chain", Register: "Academic but directive, exam-oriented", Purpose: "Summarise research for student revision" },
+      annotations: {
+        title: "Reading strategies for lecture notes and handouts",
+        points: [
+          "Lecture notes are compressed: they assume you attended the lecture. If a term is unfamiliar, look it up before the exam rather than leaving a gap.",
+          "The citation (Iliff et al., 2012) marks a landmark discovery. For essays, read at least the abstract of the original paper.",
+          "The '60%' figure is precise and examinable — note it, do not approximate it as 'about half' in your writing.",
+          "The key point at the bottom is a causal logic chain. Learn this structure: it reflects the core argument the lecturer wants you to reproduce.",
+          "Notice how 'amyloid-beta' connects sleep research to Alzheimer's disease: this kind of interdisciplinary link is effective in essay writing.",
+        ],
+        strategies: ["Prioritising key-point summaries", "Following citation trails", "Building precise technical vocabulary", "Recognising causal chains"],
+      },
+    },
+    {
+      id: "sl4", badge: "Academic C1", badgeClass: "badge-academic", panelStyle: "academic-style",
+      title: "Peer-reviewed article (Methods/Results excerpt)", meta: "Nature Neuroscience, Vol. 22 — Peer-reviewed", cefr: "C1+",
+      contentRich: true,
+      terms: [
+        { word: "Randomised participants", def: "Participants assigned to conditions by chance to prevent selection bias and ensure comparability" },
+        { word: "polysomnographic recording", def: "A precise technique measuring brain electrical activity, eye movements, and muscle tone during sleep stages" },
+        { word: "crossover washout period", def: "A rest period between experimental conditions to allow recovery and prevent order effects" },
+        { word: "lumbar puncture", def: "A medical procedure using a needle to extract cerebrospinal fluid from the spinal canal" },
+        { word: "Abeta42", def: "A specific form of amyloid-beta protein whose accumulation in the brain is linked to Alzheimer's pathology" },
+        { word: "in vivo", def: "Studies conducted in living organisms, including human trials, as opposed to cell or lab-dish studies" },
+        { word: "amyloidogenic aggregation", def: "The process of amyloid protein clumping together into deposits associated with Alzheimer's disease" },
+        { word: "glymphatic drainage", def: "The glymphatic system's mechanism for flushing metabolic waste products from brain tissue during sleep" },
+      ],
+      contentTemplate: "{0} (n=78) underwent {1} across two counterbalanced conditions: total sleep deprivation (TSD) and habitual sleep (HS), separated by a {2} of seven days. Cerebrospinal fluid samples collected via {3} revealed significantly elevated {4} concentrations in TSD relative to HS (mean difference: 12.3 pg/mL; 95% CI: 7.6–17.0; p<0.001), consistent with prior {5} findings (Ju et al., 2017 [doi:10.1002/ana.24838]). These data support the hypothesis that acute sleep loss precipitates {6} via impaired {7}.",
+      features: { Vocabulary: "Highly specialised (polysomnographic, amyloidogenic, glymphatic drainage)", Grammar: "Passive throughout, precise statistical notation, Latin abbreviations", Register: "Impersonal, precise, convention-bound", Purpose: "Report experimental methods and results to specialists" },
+      annotations: {
+        title: "Reading strategies for scientific results sections",
+        points: [
+          "In scientific papers, read in this order: Abstract, then Introduction conclusion, then Results summary, then Discussion conclusion. Do not read linearly on first pass.",
+          "The sample size (n=78) and design (randomised, crossover) tell you about reliability before you read a single result.",
+          "Statistical notation (mean difference, 95% CI, p<0.001) follows a standard format: learn to read these as a unit using a statistics glossary.",
+          "Hover over 'Abeta42' — this is the same protein as amyloid-beta in the lecture notes, using precise biochemical notation. The same concept appears across text types.",
+          "The phrase 'support the hypothesis' is deliberately cautious: scientists do not say 'prove'. Note this convention and use it in your own academic writing.",
+          "Compare all four sleep texts: the same biological phenomenon appears in a podcast, an NHS page, lecture notes, and a journal article. This is how you build from general to specialist understanding.",
+        ],
+        strategies: ["Non-linear reading strategy", "Reading statistical notation", "Connecting texts across registers", "Understanding scientific hedging"],
+      },
+    },
+  ],
+
+  ai: [
+    {
+      id: "a1", badge: "Informal", badgeClass: "badge-informal", panelStyle: "informal-style",
+      title: "YouTube comment", meta: "Under a video: 'I Asked AI to Write My Essay'", cefr: "A2–B1",
+      content: "bro this is the future lol why would anyone waste time writing essays when AI can do it in 2 seconds my teacher has no idea i use chatgpt for everything and honestly its fine bc i learn more watching the vid than writing some boring essay anyway",
+      features: { Vocabulary: "Slang (bro, lol, bc), minimal punctuation", Grammar: "Fragmented, no capitalisation, run-on", Register: "Very informal, provocative, anti-academic", Purpose: "Share an opinion, seek peer validation" },
+      annotations: {
+        title: "Reading strategies for online comments",
+        points: [
+          "Identify the implicit claim: 'AI writing is a substitute for learning to write.' This is asserted, not argued.",
+          "Notice the logical gap: 'I learn more watching the vid' does not support using AI for writing. These are different activities.",
+          "Online comments are designed to provoke reaction, not to inform. Read them to understand popular attitudes, not to gather academic evidence.",
+          "The phrase 'its fine bc' signals rationalisation, not reasoning. There is no evidence offered.",
+          "As an academic reader, your job is to identify what kind of text this is and what it can and cannot tell you.",
+        ],
+        strategies: ["Identifying unsupported claims", "Distinguishing assertion from argument", "Evaluating text purpose"],
+      },
+    },
+    {
+      id: "a2", badge: "Semi-formal", badgeClass: "badge-informal", panelStyle: "informal-style",
+      title: "Technology news article", meta: "Wired.com, staff journalist, edited", cefr: "B2",
+      content: "Large language models have moved quickly from novelty to infrastructure. Within two years of ChatGPT's launch, major universities had revised their academic integrity policies, law firms had integrated AI into drafting workflows, and the medical diagnostics industry had begun exploring AI-assisted triage. What's less clear is whether the speed of adoption has outpaced our collective ability to evaluate the risks. The alignment problem — the challenge of ensuring AI systems behave according to human values — remains largely unsolved, and it is increasingly difficult to explain, in plain language, what a given model actually does.",
+      features: { Vocabulary: "Semi-technical (large language models, alignment problem, triage)", Grammar: "Long sentences with embedded clauses, rhetorical framing", Register: "Informed, analytical, accessible to educated general reader", Purpose: "Contextualise AI developments and raise critical questions" },
+      annotations: {
+        title: "Reading strategies for technology journalism",
+        points: [
+          "The opening sentence makes a strong claim — 'from novelty to infrastructure' is a framing device. Ask: do the examples that follow actually support this?",
+          "Note the shift from factual reporting (universities revised policies, law firms integrated AI) to evaluative framing ('What's less clear is...').",
+          "The 'alignment problem' is introduced in parentheses as a quick definition. This is a journalistic device to define technical terms without interrupting the sentence.",
+          "The phrase 'largely unsolved' is carefully chosen — not 'completely unsolved'. The hedge matters and is worth noting.",
+          "This text is useful as background context in academic writing, but its claims need to be corroborated with research citations before you use them as evidence.",
+        ],
+        strategies: ["Evaluating framing", "Distinguishing fact from interpretation", "Identifying hedged claims", "Assessing suitability as academic source"],
+      },
+    },
+    {
+      id: "a3", badge: "Formal", badgeClass: "badge-formal", panelStyle: "formal-style",
+      title: "Government white paper (excerpt)", meta: "UK Department for Science, Innovation and Technology, 2023 — adapted", cefr: "B2–C1",
+      content: "The Government's approach to AI regulation is grounded in a context- and sector-specific framework rather than a single statutory instrument. Existing regulators — including the Financial Conduct Authority, the Medicines and Healthcare products Regulatory Agency, and the Information Commissioner's Office — are expected to apply their established mandates to AI-related risks within their respective domains. This approach reflects a deliberate policy preference for regulatory agility over prescriptive legislation, on the basis that the technology's trajectory remains sufficiently uncertain to preclude effective ex ante rule-making.",
+      features: { Vocabulary: "Legal and policy register (statutory instrument, prescriptive legislation, ex ante)", Grammar: "Passive, nominal, highly complex sentence structure", Register: "Official, authoritative, technocratic", Purpose: "State government position on AI to a policy audience" },
+      annotations: {
+        title: "Reading strategies for government policy texts",
+        points: [
+          "Read the first sentence for the core policy stance: the government prefers sector-specific regulation over a single law. The rest elaborates on this.",
+          "The list of three regulators (FCA, MHRA, ICO) does not need to be memorised — note only that different sectors have different regulators.",
+          "The Latin phrase 'ex ante' means 'before the event': in context, making rules before knowing how the technology will develop. Encountering Latin in policy texts is common.",
+          "The phrase 'deliberate policy preference' signals this is a choice, not a constraint. The government is explaining its reasoning, which you can agree or disagree with.",
+          "Compare the register to the Wired article: same topic, radically different vocabulary and sentence structure. Different audiences (general public vs policy professionals) require different registers.",
+        ],
+        strategies: ["Extracting policy positions", "Handling unfamiliar terminology from context", "Comparing registers across texts", "Lateral reading for credibility"],
+      },
+    },
+    {
+      id: "a4", badge: "Academic C1", badgeClass: "badge-academic", panelStyle: "academic-style",
+      title: "Peer-reviewed article (Discussion excerpt)", meta: "AI and Society, Springer — Peer-reviewed", cefr: "C1+",
+      contentRich: true,
+      terms: [
+        { word: "algorithmic accountability", def: "The capacity to explain or account for how and why an algorithmic decision was made" },
+        { word: "theoretically contested", def: "Challenged or debated in its definition, meaning different things to different researchers or traditions" },
+        { word: "procedural transparency", def: "The ability to trace the reasoning path from inputs to outputs in an AI system" },
+        { word: "ALTAI", def: "Assessment List for Trustworthy AI: EU guidelines for AI development covering ethics, safety, and explainability" },
+        { word: "contestability mechanisms", def: "Structures allowing external parties to scrutinise, challenge, and appeal decisions made by AI systems" },
+        { word: "transparency-washing", def: "A performance of compliance that conceals a lack of genuine accountability, borrowing the logic of greenwashing" },
+        { word: "normative architecture", def: "The values, assumptions, and social norms embedded in the design of technical systems and governance frameworks" },
+        { word: "structural asymmetries", def: "Unequal distributions of power and resources, often along lines of race, class, or geography, treated as natural or inevitable" },
+      ],
+      contentTemplate: "The concept of {0} remains {1} (Diakopoulos, 2016 [doi:10.1177/1461444815616569]; Mittelstadt et al., 2019). While {2} has been operationalised in technical frameworks such as {3} (European Commission, 2020), critics contend that transparency without corresponding {4} risks reducing accountability to a {5} exercise. This critique implicates broader debates regarding the {6} of AI governance, particularly the extent to which current frameworks reproduce rather than challenge existing {7} in knowledge production and institutional authority.",
+      features: { Vocabulary: "Highly theoretical (normative architecture, transparency-washing, structural asymmetries)", Grammar: "Complex hedging, multiple citations in one sentence, nominalised verbs", Register: "Interdisciplinary academic, critical theory-inflected", Purpose: "Synthesise debate, advance a critical position to specialists" },
+      annotations: {
+        title: "Reading strategies for critical theory academic texts",
+        points: [
+          "This text is in a Discussion section: the author is synthesising existing debate, not reporting new data. The citations are the evidence.",
+          "Multiple citations in one sentence (Diakopoulos, 2016; Mittelstadt et al., 2019) signal a claim supported by more than one source. In academic writing, this is called triangulation.",
+          "Hover over 'transparency-washing' — the suffix '-washing' is borrowed from 'greenwashing'. Recognising morphological patterns helps you decode new terms independently.",
+          "The phrase 'risks reducing accountability to a ... exercise' is a critical argument, not a neutral description. The author is making a normative claim about what accountability should be.",
+          "The final sentence uses very long noun phrases. Read each noun phrase as a unit (normative architecture of AI governance; structural asymmetries in knowledge production), then connect them.",
+          "On first reading, identify: (1) what the author supports (transparency plus contestability), (2) what they critique (transparency alone), (3) the wider implication (power inequalities in AI governance).",
+        ],
+        strategies: ["Identifying the author's position in debate", "Understanding triangulation", "Morphological analysis of new terms", "Reading long noun phrases as units", "Connecting argument to broader debate"],
+      },
+    },
+  ],
+};
+
+const STRATEGIES = [
+  { icon: "🔍", name: "Skim reading", desc: "Moving quickly over a text to grasp its general topic and structure before reading carefully." },
+  { icon: "📌", name: "PQRR method", desc: "Preview, Question, Read, Review: a structured approach to active reading of complex texts." },
+  { icon: "🏷️", name: "Identifying register", desc: "Recognising how formal or informal a text is and adjusting your expectations about its reliability and purpose." },
+  { icon: "🧩", name: "Tolerating ambiguity", desc: "Continuing to read when not every word or phrase is understood, using surrounding context to build meaning." },
+  { icon: "📚", name: "Vocabulary logging", desc: "Recording new terms with their definitions and context sentences to build academic vocabulary systematically." },
+  { icon: "🔗", name: "Following argument structure", desc: "Identifying how claims, evidence, and implications are connected across a text." },
+  { icon: "⚖️", name: "Evaluating evidence", desc: "Asking what kind of evidence is offered (anecdote, statistics, citation) and how reliable it is for its purpose." },
+  { icon: "🎯", name: "Extracting key claims", desc: "Finding the one or two central assertions a text makes, stripping away detail and illustration." },
+  { icon: "🌐", name: "Lateral reading", desc: "Checking a source's credibility by reading about it elsewhere, rather than only within the source itself." },
+];
+
+const COMPARE_FEATURES = [
+  { feature: "Vocabulary", informal: "Everyday words, slang, abbreviations, emoji", formal: "Domain-specific terms, precise word choice", academic: "Technical jargon, Latin phrases, specialist notation" },
+  { feature: "Grammar", informal: "Fragments, no punctuation, spoken syntax", formal: "Complete sentences, complex clauses, passive voice", academic: "Nominalised verbs, long noun phrases, embedded citations" },
+  { feature: "Evidence", informal: "Personal experience, opinion, or none", formal: "Statistics, attributed claims, policy data", academic: "Peer-reviewed citations, experimental data, confidence intervals" },
+  { feature: "Register", informal: "Conversational, emotional, performative", formal: "Objective, measured, professional", academic: "Impersonal, hedged, convention-bound" },
+  { feature: "Purpose", informal: "Social connection, entertainment, quick opinion", formal: "Inform an educated general audience, state a position", academic: "Extend knowledge, report to specialists, advance theory" },
+  { feature: "Re-reading needed?", informal: "No: once is usually enough", formal: "Once or twice for full comprehension", academic: "Multiple passes; first reading gives orientation only" },
+];
+
+function RichContent({ text }) {
+  if (!text.contentRich) {
+    return (
+      <div className={`excerpt ${text.panelStyle}`} style={{ whiteSpace: "pre-line" }}>
+        {text.content}
+      </div>
+    );
+  }
+  const parts = text.contentTemplate.split(/\{(\d+)\}/);
+  const nodes = parts.map((part, i) => {
+    const num = parseInt(part);
+    if (!isNaN(num) && text.terms[num]) {
+      const t = text.terms[num];
+      return (
+        <span key={i} style={{ position: "relative", display: "inline" }}>
+          <span className="term" title={t.def} style={{ borderBottom: "2px dashed var(--ju-yellow)", cursor: "help" }}>{t.word}</span>
+        </span>
+      );
+    }
+    const isRef = part.match(/\[doi:[^\]]+\]/);
+    if (isRef) {
+      return <span key={i} style={{ color: "var(--ju-purple)", fontSize: "0.8em" }}>{part}</span>;
+    }
+    return <span key={i}>{part}</span>;
+  });
+  return (
+    <div className={`excerpt ${text.panelStyle}`}>
+      {nodes}
+      <div style={{ marginTop: "0.6rem", fontSize: "0.7rem", color: "var(--ju-purple-dark)", fontStyle: "italic", fontFamily: "var(--font-body)" }}>
+        Hover over underlined terms for definitions.
+      </div>
+    </div>
+  );
+}
+
+function TextPanel({ text, side }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className={`text-panel selected-${side} fade-in`}>
+      <div className="panel-header">
+        <span className={`panel-badge ${text.badgeClass}`}>{text.badge}</span>
+        <div className="panel-title-block">
+          <div className="panel-title">{text.title}</div>
+          <div className="panel-meta">{text.meta}</div>
+        </div>
+        <span className="cefr-pip">{text.cefr}</span>
+      </div>
+      <div className="panel-body">
+        <RichContent text={text} />
+        <button className={`annotation-toggle ${open ? "open" : ""}`} onClick={() => setOpen(!open)}>
+          {open ? "▲ Hide" : "▼ Show"} reading strategies and annotation
+        </button>
+        {open && (
+          <div className="annotation-box fade-in">
+            <h4>Reading strategies: {text.annotations.title}</h4>
+            <ul className="annotation-list">
+              {text.annotations.points.map((pt, i) => (
+                <li key={i}><span className="bullet">→</span><span>{pt}</span></li>
+              ))}
+            </ul>
+            <div className="strategy-chips">
+              {text.annotations.strategies.map((s) => (
+                <span key={s} className="strategy-chip">{s}</span>
+              ))}
+            </div>
+          </div>
+        )}
+        <div className="feature-row">
+          {Object.entries(text.features).map(([k, v]) => (
+            <span key={k} className="feature-item">
+              <strong>{k}:</strong> {v}
+            </span>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function App() {
+  const [topic, setTopic] = useState("climate");
+  const [leftIdx, setLeftIdx] = useState(0);
+  const [rightIdx, setRightIdx] = useState(3);
+  const [showCompare, setShowCompare] = useState(false);
+  const [showStrategies, setShowStrategies] = useState(false);
+
+  const texts = TEXTS[topic];
+
+  return (
+    <>
+      <header className="site-header">
+        <div className="header-inner">
+          <div className="header-accent" />
+          <div className="header-text">
+            <span className="kicker">Pathway Intensive English (PIEG13) · Interactive Reading Guide</span>
+            <h1>Reading Complex Texts: From B2 to C1</h1>
+            <div className="subtitle">Compare text types across four complexity levels on the same topic</div>
+          </div>
+          <div className="header-ilo">
+            <div>
+              <strong>Learning outcome</strong>
+              <p>Apply academic study and language strategies for managing complex texts and extended spoken language, and use digital tools critically and ethically, to support independent learning.</p>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main className="main-wrap">
+        <div className="intro-band">
+          <div className="intro-card">
+            <div className="intro-icon" style={{ background: "var(--ju-turquoise-light)" }}>🎯</div>
+            <div>
+              <h3 style={{ color: "var(--ju-turquoise)" }}>How to use this guide</h3>
+              <p>Select a topic, then choose any two texts to compare side by side. Open the annotation panel under each text to see reading strategies specific to that text type.</p>
+            </div>
+          </div>
+          <div className="intro-card">
+            <div className="intro-icon" style={{ background: "var(--ju-purple-light)" }}>📊</div>
+            <div>
+              <h3 style={{ color: "var(--ju-purple)" }}>Four complexity levels</h3>
+              <p>Informal (A2–B1), semi-formal (B1–B2), formal (B2–C1), and academic C1+. Academic texts have underlined terms: hover for definitions. The same topic appears in all four levels.</p>
+            </div>
+          </div>
+          <div className="intro-card">
+            <div className="intro-icon" style={{ background: "var(--ju-yellow-light)" }}>💡</div>
+            <div>
+              <h3 style={{ color: "#7a5700" }}>Your C1 target</h3>
+              <p>At C1, you read academic texts using active strategies, manage unfamiliar terminology without stopping, and identify how argument structure and evidence work across different genres.</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="section-label">Choose a topic</div>
+        <div className="topic-tabs">
+          {TOPICS.map((t) => (
+            <button key={t.id} className={`topic-tab ${topic === t.id ? "active" : ""}`}
+              onClick={() => { setTopic(t.id); setLeftIdx(0); setRightIdx(3); }}>
+              {t.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="spectrum-bar">
+          <div>
+            <div className="spectrum-label left">Informal</div>
+            <div style={{ fontSize: "0.63rem", color: "var(--grey-400)", marginTop: "0.1rem" }}>A2–B1</div>
+          </div>
+          <div className="spectrum-track">
+            <div className="spectrum-dots">
+              {texts.map((t, i) => (
+                <div key={t.id}
+                  className={`spectrum-dot ${leftIdx === i || rightIdx === i ? "active" : ""}`}
+                  style={{
+                    borderColor: leftIdx === i ? "var(--ju-turquoise)" : rightIdx === i ? "var(--ju-purple)" : "var(--grey-400)",
+                    background: leftIdx === i ? "var(--ju-turquoise)" : rightIdx === i ? "var(--ju-purple)" : "white",
+                  }}
+                  title={t.title}
+                  onClick={() => { if (i !== rightIdx) setLeftIdx(i); else if (i !== leftIdx) setRightIdx(i); }}
+                />
+              ))}
+            </div>
+          </div>
+          <div style={{ textAlign: "right" }}>
+            <div className="spectrum-label right">Academic C1</div>
+            <div style={{ fontSize: "0.63rem", color: "var(--grey-400)", marginTop: "0.1rem" }}>C1+</div>
+          </div>
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.5rem", marginBottom: "1.2rem" }}>
+          {["Left panel", "Right panel"].map((label, panelSide) => {
+            const current = panelSide === 0 ? leftIdx : rightIdx;
+            const setter = panelSide === 0 ? setLeftIdx : setRightIdx;
+            const colour = panelSide === 0 ? "var(--ju-turquoise)" : "var(--ju-purple)";
+            return (
+              <div key={label}>
+                <div className="section-label" style={{ color: colour }}>{label}</div>
+                <div style={{ display: "flex", gap: "0.4rem", flexWrap: "wrap" }}>
+                  {texts.map((t, i) => (
+                    <button key={t.id} onClick={() => setter(i)}
+                      style={{
+                        background: current === i ? colour : "none",
+                        border: `1.5px solid ${current === i ? colour : "var(--grey-200)"}`,
+                        color: current === i ? "white" : "var(--grey-700)",
+                        borderRadius: "6px", padding: "0.28rem 0.6rem", fontSize: "0.73rem",
+                        cursor: "pointer", fontFamily: "var(--font-body)", fontWeight: 500, transition: "all 0.15s",
+                      }}>
+                      {t.badge}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="panels-grid">
+          <TextPanel text={texts[leftIdx]} side="left" key={`left-${topic}-${leftIdx}`} />
+          <TextPanel text={texts[rightIdx]} side="right" key={`right-${topic}-${rightIdx}`} />
+        </div>
+
+        <div className="compare-section">
+          <h2 onClick={() => setShowCompare(!showCompare)}>
+            {showCompare ? "▲" : "▼"} Compare text features across all levels
+          </h2>
+          {showCompare && (
+            <table className="feature-table fade-in">
+              <thead>
+                <tr>
+                  <th>Feature</th>
+                  <th>Informal (A2–B1)</th>
+                  <th>Formal (B2)</th>
+                  <th>Academic (C1+)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {COMPARE_FEATURES.map((row) => (
+                  <tr key={row.feature}>
+                    <td>{row.feature}</td>
+                    <td className="informal-cell">{row.informal}</td>
+                    <td className="formal-cell">{row.formal}</td>
+                    <td className="academic-cell">{row.academic}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+
+        <div className="glossary-section">
+          <h2 onClick={() => setShowStrategies(!showStrategies)}>
+            {showStrategies ? "▲" : "▼"} Reading strategies reference
+          </h2>
+          {showStrategies && (
+            <div className="glossary-grid fade-in">
+              {STRATEGIES.map((s) => (
+                <div className="glossary-card" key={s.name}>
+                  <h4>{s.icon} {s.name}</h4>
+                  <p>{s.desc}</p>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </main>
+
+      <footer style={{ borderTop: "1px solid var(--grey-200)", padding: "1.1rem 2rem", display: "flex", alignItems: "center", justifyContent: "space-between", maxWidth: "1200px", margin: "0 auto" }}>
+        <div style={{ fontSize: "0.7rem", color: "var(--grey-400)" }}>
+          Pathway Intensive English (PIEG13) · Jönköping University Enterprise · For educational use.
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+          <span style={{ fontSize: "0.68rem", color: "var(--grey-400)" }}>CEFR:</span>
+          <div className="cefr-scale">
+            {[["A1","#ccc"],["A2","#b5d5d4"],["B1","var(--ju-turquoise)"],["B2","#7a9e9d"],["C1","var(--ju-purple)"],["C2","var(--ju-purple-dark)"]].map(([l,bg]) => (
+              <div key={l} className="cefr-step" style={{ background: bg }}>{l}</div>
+            ))}
+          </div>
+        </div>
+      </footer>
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(App));
+</script>
+</body>
+</html>
